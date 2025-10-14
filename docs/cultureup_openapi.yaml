@@ -1,0 +1,1046 @@
+openapi: 3.0.3
+info:
+  title: CultureUP API
+  version: 0.1.0
+  description: >-
+    API pública do CultureUP para gestão de trabalho, OKRs, feedbacks e automações.
+servers:
+  - url: https://api.cultureup.app/v1
+    description: Produção
+  - url: https://staging-api.cultureup.app/v1
+    description: Staging
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    Meta:
+      type: object
+      properties:
+        cursor:
+          type: string
+          nullable: true
+        nextCursor:
+          type: string
+          nullable: true
+    Envelope:
+      type: object
+      properties:
+        data:
+          nullable: true
+        meta:
+          $ref: '#/components/schemas/Meta'
+        error:
+          $ref: '#/components/schemas/Error'
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        plan:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [owner, admin, member, guest]
+        locale:
+          type: string
+        timezone:
+          type: string
+    Space:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+          nullable: true
+    Folder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+    List:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        folderId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        viewDefaults:
+          type: object
+          additionalProperties: true
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        listId:
+          type: string
+          format: uuid
+        parentTaskId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        description:
+          type: object
+        status:
+          type: string
+        priority:
+          type: string
+        assignees:
+          type: array
+          items:
+            type: string
+            format: uuid
+        startAt:
+          type: string
+          format: date-time
+          nullable: true
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        customFields:
+          type: object
+          additionalProperties: true
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentType:
+          type: string
+          enum: [task, doc, okr, oneonone, feedback]
+        parentId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        body:
+          type: object
+        mentions:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attachments:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+    View:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        listId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [table, kanban, gantt, timeline, workload, mindmap, map, box, activity]
+        config:
+          type: object
+          additionalProperties: true
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        timeframeStart:
+          type: string
+          format: date
+        timeframeEnd:
+          type: string
+          format: date
+        description:
+          type: string
+        visibility:
+          type: string
+          enum: [company, team, private]
+        progress:
+          type: number
+          format: float
+        krCount:
+          type: integer
+    KeyResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        goalId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        metricType:
+          type: string
+          enum: [number, percent, currency, task_linked]
+        target:
+          type: number
+        current:
+          type: number
+        unit:
+          type: string
+          nullable: true
+        source:
+          type: string
+          enum: [manual, task_query]
+        taskQuery:
+          type: object
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [continuous, request, praise]
+        visibility:
+          type: string
+          enum: [private, public]
+        giverId:
+          type: string
+          format: uuid
+        receiverId:
+          type: string
+          format: uuid
+        context:
+          type: string
+        valuesTags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+    OneOnOne:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        leaderId:
+          type: string
+          format: uuid
+        memberId:
+          type: string
+          format: uuid
+        cadence:
+          type: string
+          enum: [weekly, biweekly, monthly]
+        nextDate:
+          type: string
+          format: date
+        agenda:
+          type: object
+          additionalProperties: true
+        notes:
+          type: object
+        actions:
+          type: array
+          items:
+            type: string
+    AutomationRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        location:
+          type: string
+          enum: [space, folder, list]
+        trigger:
+          type: string
+          enum: [task.created, task.status_changed, date.reached, okr.progress_changed, feedback.received, oneonone.scheduled]
+        conditions:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              op:
+                type: string
+              value:
+                type: string
+        actions:
+          type: array
+          items:
+            type: string
+            enum: [task.update, task.assign, send.email, send.webhook, okr.update, notify.slack]
+        active:
+          type: boolean
+        usageCount:
+          type: integer
+    Doc:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: object
+        isPublic:
+          type: boolean
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+paths:
+  /auth/login:
+    post:
+      summary: Login com e-mail e senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/sso/google:
+    post:
+      summary: Inicia fluxo de SSO Google
+      responses:
+        '302':
+          description: Redireciona para Google
+  /spaces:
+    get:
+      summary: Lista Spaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Space'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      summary: Cria Space
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /spaces/{spaceId}/folders:
+    get:
+      summary: Lista Folders do Space
+      parameters:
+        - in: path
+          name: spaceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Folder'
+    post:
+      summary: Cria Folder
+      parameters:
+        - in: path
+          name: spaceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /folders/{folderId}/lists:
+    get:
+      summary: Lista Lists do Folder
+      parameters:
+        - in: path
+          name: folderId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/List'
+    post:
+      summary: Cria List
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /lists/{listId}/tasks:
+    get:
+      summary: Lista tarefas da List
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: assigneeId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+    post:
+      summary: Cria tarefa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: object
+                assignees:
+                  type: array
+                  items:
+                    type: string
+                dueAt:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Criado
+  /tasks/{taskId}:
+    patch:
+      summary: Atualiza tarefa
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                assignees:
+                  type: array
+                  items:
+                    type: string
+                customFields:
+                  type: object
+                  additionalProperties: true
+                dueAt:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Atualizado
+  /tasks/{taskId}/comments:
+    post:
+      summary: Adiciona comentário em tarefa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body:
+                  type: object
+                mentions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Criado
+  /views:
+    get:
+      summary: Lista views
+      parameters:
+        - in: query
+          name: listId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/View'
+  /views/{viewId}:
+    get:
+      summary: Detalhe view
+      parameters:
+        - in: path
+          name: viewId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/View'
+  /goals:
+    get:
+      summary: Lista objetivos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Goal'
+    post:
+      summary: Cria objetivo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, timeframeStart, timeframeEnd]
+              properties:
+                title:
+                  type: string
+                timeframeStart:
+                  type: string
+                  format: date
+                timeframeEnd:
+                  type: string
+                  format: date
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /goals/{goalId}/key-results:
+    get:
+      summary: Lista KRs do objetivo
+      parameters:
+        - in: path
+          name: goalId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KeyResult'
+    post:
+      summary: Cria KR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, metricType, target]
+              properties:
+                title:
+                  type: string
+                metricType:
+                  type: string
+                target:
+                  type: number
+                unit:
+                  type: string
+                source:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /key-results/{keyResultId}/progress:
+    post:
+      summary: Atualiza progresso do KR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current]
+              properties:
+                current:
+                  type: number
+      responses:
+        '200':
+          description: Atualizado
+  /feedbacks:
+    get:
+      summary: Lista feedbacks
+      parameters:
+        - in: query
+          name: receiverId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: visibility
+          schema:
+            type: string
+            enum: [private, public]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+    post:
+      summary: Envia feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, receiverId, context]
+              properties:
+                type:
+                  type: string
+                receiverId:
+                  type: string
+                  format: uuid
+                context:
+                  type: string
+                visibility:
+                  type: string
+                  enum: [private, public]
+                valuesTags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Criado
+  /feedbacks/{feedbackId}/share:
+    post:
+      summary: Compartilha feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visibility:
+                  type: string
+                  enum: [private, public]
+      responses:
+        '200':
+          description: Atualizado
+  /one-on-ones:
+    get:
+      summary: Lista 1:1s
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OneOnOne'
+    post:
+      summary: Cria 1:1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leaderId, memberId, cadence]
+              properties:
+                leaderId:
+                  type: string
+                  format: uuid
+                memberId:
+                  type: string
+                  format: uuid
+                cadence:
+                  type: string
+      responses:
+        '201':
+          description: Criado
+  /one-on-ones/{oneOnOneId}/notes:
+    post:
+      summary: Registra notas da sessão
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notes]
+              properties:
+                notes:
+                  type: object
+                actions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Atualizado
+  /automations:
+    get:
+      summary: Lista automations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AutomationRule'
+    post:
+      summary: Cria automação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location, trigger, actions]
+              properties:
+                location:
+                  type: string
+                trigger:
+                  type: string
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                actions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Criado
+  /automations/{automationId}/test:
+    post:
+      summary: Testa regra de automação
+      responses:
+        '200':
+          description: OK
+  /webhooks/incoming:
+    post:
+      summary: Recebe webhook externo
+      responses:
+        '202':
+          description: Aceito
+  /docs:
+    get:
+      summary: Lista docs
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Cria doc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, content]
+              properties:
+                title:
+                  type: string
+                content:
+                  type: object
+                isPublic:
+                  type: boolean
+      responses:
+        '201':
+          description: Criado
+  /docs/{docId}:
+    get:
+      summary: Detalhe doc
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: Atualiza doc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: object
+                isPublic:
+                  type: boolean
+      responses:
+        '200':
+          description: Atualizado
+  /search:
+    get:
+      summary: Busca global
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [task, doc, goal, feedback]
+      responses:
+        '200':
+          description: OK
+  /audit-logs:
+    get:
+      summary: Lista audit logs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    $ref: '#/components/schemas/Meta'
