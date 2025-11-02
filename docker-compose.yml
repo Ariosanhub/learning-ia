@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: cultureup
+      POSTGRES_PASSWORD: cultureup
+      POSTGRES_DB: cultureup
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: pnpm --filter @cultureup/backend start:dev
+    environment:
+      DATABASE_URL: postgres://cultureup:cultureup@postgres:5432/cultureup
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+      - redis
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    command: pnpm --filter @cultureup/web dev
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/v1
+    ports:
+      - '3001:3000'
+    depends_on:
+      - backend
+volumes:
+  postgres_data:
