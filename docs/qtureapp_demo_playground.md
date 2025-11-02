@@ -5,8 +5,11 @@ Esta página foi criada para que você consiga **testar e demonstrar** rapidamen
 ## Como usar
 
 1. Navegue até `apps/web/public/demo/index.html` e abra o arquivo no navegador (Chrome, Edge, Safari ou Firefox).
-2. Caso queira compartilhar com outras pessoas, hospede o arquivo em qualquer serviço estático gratuito (GitHub Pages, Netlify Drop, Vercel drag-and-drop, etc.).
-3. Todas as interações (tarefas, OKRs, feedbacks) ficam salvas no `localStorage` do navegador. Use o botão **Limpar dados** para reiniciar a simulação.
+2. Se preferir um servidor local, execute `pnpm dlx serve apps/web/public/demo -l 4173` e acesse `http://localhost:4173`.
+3. Caso queira compartilhar com outras pessoas, hospede o arquivo em qualquer serviço estático gratuito (GitHub Pages, Netlify Drop, Vercel drag-and-drop, etc.).
+4. Todas as interações (tarefas, OKRs, feedbacks) ficam salvas no `localStorage` do navegador. Use o botão **Limpar dados** para reiniciar a simulação.
+
+> Precisa de um guia completo de configuração (Node, pnpm, Docker, solução do erro `pnpm install` 403)? Consulte `docs/dev_environment_setup.md`.
 
 ## O que está incluído
 
